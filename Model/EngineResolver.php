@@ -10,8 +10,6 @@ use Magento\Framework\Search\EngineResolverInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Search engine resolver model.
- *
  * @api
  * @since 100.1.0
  */
@@ -19,7 +17,6 @@ class EngineResolver implements EngineResolverInterface
 {
     /**
      * MySQL search engine
-     * @deprecated Use config.xml for default setting
      */
     const CATALOG_SEARCH_MYSQL_ENGINE = 'mysql';
 
@@ -62,18 +59,11 @@ class EngineResolver implements EngineResolverInterface
     private $logger;
 
     /**
-     * @var string
-     */
-    private $defaultEngine;
-
-    /**
      * @param ScopeConfigInterface $scopeConfig
      * @param array $engines
-     * @param LoggerInterface $logger
      * @param string $path
      * @param string $scopeType
-     * @param string|null $scopeCode
-     * @param string|null $defaultEngine
+     * @param string $scopeCode
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -81,8 +71,7 @@ class EngineResolver implements EngineResolverInterface
         LoggerInterface $logger,
         $path,
         $scopeType,
-        $scopeCode = null,
-        $defaultEngine = null
+        $scopeCode = null
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->path = $path;
@@ -90,7 +79,6 @@ class EngineResolver implements EngineResolverInterface
         $this->scopeCode = $scopeCode;
         $this->engines = $engines;
         $this->logger = $logger;
-        $this->defaultEngine = $defaultEngine;
     }
 
     /**
@@ -112,17 +100,10 @@ class EngineResolver implements EngineResolverInterface
         if (in_array($engine, $this->engines)) {
             return $engine;
         } else {
-            //get default engine from default scope
-            if ($this->defaultEngine && in_array($this->defaultEngine, $this->engines)) {
-                $this->logger->error(
-                    $engine . ' search engine doesn\'t exist. Falling back to ' . $this->defaultEngine
-                );
-            } else {
-                $this->logger->error(
-                    'Default search engine is not configured, fallback is not possible'
-                );
-            }
-            return $this->defaultEngine;
+            $this->logger->error(
+                $engine . ' search engine doesn\'t exists. Falling back to ' . self::CATALOG_SEARCH_MYSQL_ENGINE
+            );
+            return self::CATALOG_SEARCH_MYSQL_ENGINE;
         }
     }
 }
